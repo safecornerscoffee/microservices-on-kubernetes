@@ -1,3 +1,13 @@
+server:
+  port: 7001
+  error:
+    include-message: always
+
 eureka:
   client:
     enabled: false
+
+logging:
+  level:
+    root: info
+    com.safecornerscoffee: debug
