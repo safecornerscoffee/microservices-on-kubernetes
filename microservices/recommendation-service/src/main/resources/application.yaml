@@ -1,3 +1,13 @@
+server:
+  port: 7002
+  error:
+    include-message: always
+
 eureka:
   client:
     enabled: false
+
+logging:
+  level:
+    root: info
+    com.safecornerscoffee.microservices: debug
