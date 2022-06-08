@@ -1,3 +1,9 @@
+spring:
+  application:
+    name: product-composite-service
+  profiles:
+    group:
+      docker: docker
 server:
   port: 7000
   error:
