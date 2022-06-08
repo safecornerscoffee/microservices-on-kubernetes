@@ -33,6 +33,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    private final String scheme;
     private final String productServiceUrl;
     private final String recommendationServiceUrl;
     private final String reviewServiceUrl;
@@ -50,10 +51,10 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
-
-        this.productServiceUrl = "http://" + productServiceHost + ":" + productServicePort + "/product/";
-        this.recommendationServiceUrl = "http://" + recommendationServiceHost + ":" + recommendationServicePort + "/recommendation?productId=";
-        this.reviewServiceUrl = "http://" + reviewServiceHost + ":" + reviewServicePort + "/review?productId=";
+        this.scheme = "http://";
+        this.productServiceUrl = scheme + productServiceHost + ":" + productServicePort + "/product/";
+        this.recommendationServiceUrl = scheme + recommendationServiceHost + ":" + recommendationServicePort + "/recommendation?productId=";
+        this.reviewServiceUrl = scheme + reviewServiceHost + ":" + reviewServicePort + "/review?productId=";
 
     }
 

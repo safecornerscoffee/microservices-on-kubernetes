@@ -3,7 +3,9 @@ spring:
     name: product-composite-service
   profiles:
     group:
-      docker: docker
+      default: ["default", "swagger"]
+      docker: ["docker", "swagger"]
+
 server:
   port: 7000
   error:
