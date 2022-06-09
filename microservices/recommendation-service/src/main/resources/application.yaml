@@ -6,9 +6,10 @@ spring:
       docker: docker
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: recommendation-db
+#      host: localhost
+#      port: 27017
+#      database: recommendation-db
+      auto-index-creation: true
 
 spring.mongodb.embedded.version: 5.0.5
 
@@ -24,6 +25,7 @@ eureka:
 logging:
   level:
     root: info
+    org.springframework.data.mongodb.core.MongoTemplate: debug
     com.safecornerscoffee.microservices: debug
 
 ---
