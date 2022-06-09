@@ -4,6 +4,13 @@ spring:
   profiles:
     group:
       docker: docker
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: recommendation-db
+
+spring.mongodb.embedded.version: 5.0.5
 
 server:
   port: 7002
@@ -21,6 +28,8 @@ logging:
 
 ---
 spring.config.activate.on-profile: docker
+
+spring.data.mongodb.host: mongodb
 
 server:
   port: 8080

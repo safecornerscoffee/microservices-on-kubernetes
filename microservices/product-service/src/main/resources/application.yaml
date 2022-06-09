@@ -5,6 +5,17 @@ spring:
     group:
       docker: docker
 
+  data:
+    mongodb:
+      auto-index-creation: true
+#  data:
+#    mongodb:
+#      host: localhost
+#      port: 27017
+#      database: product-db
+
+spring.mongodb.embedded.version: 5.0.2
+
 server:
   port: 7001
   error:
@@ -17,10 +28,13 @@ eureka:
 logging:
   level:
     root: info
+    org.springframework.data: debug
     com.safecornerscoffee: debug
 
 ---
 spring.config.activate.on-profile: docker
+
+spring.data.mongodb.host: mongodb
 
 server:
   port: 8080
