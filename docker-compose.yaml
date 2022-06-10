@@ -1,4 +1,4 @@
-version: "3.8"
+version: "2.1"
 
 services:
   product:
@@ -6,18 +6,25 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
 
   recommendation:
     build: microservices/recommendation-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - mongodb
 
   review:
     build: microservices/review-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
   product-composite:
     build: microservices/product-composite-service
@@ -27,3 +34,25 @@ services:
     ports:
       - "8080:8080"
 
+  mongodb:
+    image: mongo:4.0.10
+    mem_limit: 350m
+    ports:
+      - "27017:27017"
+    command: ["mongod", "--smallfiles"]
+
+  mariadb:
+    image: mariadb:10.5
+    mem_limit: 450m
+    ports:
+      - "3306:3306"
+    environment:
+      - MARIADB_ROOT_PASSWORD=rootpwd
+      - MARIADB_DATABASE=review-db
+      - MARIADB_USER=user
+      - MARIADB_PASSWORD=pwd
+    healthcheck:
+      test: ["CMD", "mysqladmin", "--user=user", "--password=pwd", "-h", "localhost", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
