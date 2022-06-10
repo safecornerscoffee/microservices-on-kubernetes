@@ -5,6 +5,18 @@ spring:
     group:
       docker: docker
 
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/review-db
+    username: user
+    password: pwd
+    hikari:
+      initialization-fail-timeout: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
 server:
   port: 7003
   error:
@@ -17,6 +29,8 @@ eureka:
 logging:
   level:
     root: INFO
+    org.hibernate.SQL : debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
     com.safecornerscoffee.microservices: debug
 
 ---
@@ -24,3 +38,7 @@ spring.config.activate.on-profile: docker
 
 server:
   port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mariadb://mariadb:3306/review-db
