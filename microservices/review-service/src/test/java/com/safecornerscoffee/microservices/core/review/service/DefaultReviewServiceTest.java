@@ -33,11 +33,11 @@ class DefaultReviewServiceTest {
         repository.deleteAll();
     }
     @Test
-    public void getReviewsByProductId() {
+    void getReviewsByProductId() {
 
         int productId = 1;
 
-        assertThat(repository.findByProductId(productId)).hasSize(0);
+        assertThat(repository.findByProductId(productId)).isEmpty();
 
         postAndVerifyReview(productId, 1, OK);
         postAndVerifyReview(productId, 2, OK);
@@ -57,7 +57,7 @@ class DefaultReviewServiceTest {
         int productId = 1;
         int reviewId = 1;
 
-        assertThat(repository.count()).isEqualTo(0);
+        assertThat(repository.count()).isZero();
 
         postAndVerifyReview(productId, reviewId, OK)
                 .jsonPath("$.productId").isEqualTo(productId)
@@ -82,7 +82,7 @@ class DefaultReviewServiceTest {
         assertThat(repository.findByProductId(productId)).hasSize(1);
 
         deleteAndVerifyReviewsByProductId(productId, OK);
-        assertThat(repository.findByProductId(productId)).hasSize(0);
+        assertThat(repository.findByProductId(productId)).isEmpty();
 
         deleteAndVerifyReviewsByProductId(productId, OK);
     }

@@ -51,7 +51,7 @@ class ProductRepositoryTest {
 
     @Test
     void update() {
-        assertThat(savedEntity.getVersion()).isEqualTo(0);
+        assertThat(savedEntity.getVersion()).isZero();
         savedEntity.setName("name2");
         repository.save(savedEntity);
 
@@ -70,14 +70,14 @@ class ProductRepositoryTest {
     void getByProductId() {
         Optional<ProductEntity> entity = repository.findByProductId(savedEntity.getProductId());
 
-        assertThat(entity.isPresent()).isTrue();
+        assertThat(entity).isPresent();
         assertEqualsProduct(entity.get(), savedEntity);
     }
 
     @Test
     void duplicateError() {
+        ProductEntity newEntity = new ProductEntity(savedEntity.getProductId(), "name", 1);
         assertThatThrownBy(() -> {
-            ProductEntity newEntity = new ProductEntity(savedEntity.getProductId(), "name", 1);
             repository.save(newEntity);
         }).isInstanceOf(DuplicateKeyException.class);
     }
@@ -90,8 +90,8 @@ class ProductRepositoryTest {
         entity1.setName("name1");
         repository.save(entity1);
 
+        entity2.setName("name2");
         assertThatThrownBy(() -> {
-            entity2.setName("name2");
             repository.save(entity2);
         }).isInstanceOf(OptimisticLockingFailureException.class);
 

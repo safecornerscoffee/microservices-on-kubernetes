@@ -40,7 +40,7 @@ public class SwaggerConfiguration {
     }
 
     private ApiInfo apiInfo() {
-        LOG.debug("MyApiInfo: " + myApiInfo.toString());
+        LOG.debug("MyApiInfo: {}", myApiInfo.toString());
         
         return new ApiInfo(
                 myApiInfo.getTitle(),

@@ -69,9 +69,9 @@ class RecommendationRepositoryTest {
 
     @Test
     void duplicateError() {
+        RecommendationEntity entity = new RecommendationEntity(savedEntity.getProductId(), savedEntity.getRecommendationId(),
+                "a", 2, "c");
         assertThatThrownBy(() -> {
-            RecommendationEntity entity = new RecommendationEntity(savedEntity.getProductId(), savedEntity.getRecommendationId(),
-                    "a", 2, "c");
             repository.save(entity);
         }).isInstanceOf(DuplicateKeyException.class);
     }
@@ -84,8 +84,8 @@ class RecommendationRepositoryTest {
         entity1.setAuthor("a1");
         repository.save(entity1);
 
+        entity2.setAuthor("a2");
         assertThatThrownBy(() -> {
-            entity2.setAuthor("a2");
             repository.save(entity2);
         }).isInstanceOf(OptimisticLockingFailureException.class);
 

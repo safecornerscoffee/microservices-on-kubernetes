@@ -72,7 +72,7 @@ class DefaultRecommendationServiceTest {
         assertThat(repository.findByProductId(productId)).hasSize(1);
 
         deleteAndVerifyRecommendationsByProductId(productId, OK);
-        assertThat(repository.findByProductId(productId)).hasSize(0);
+        assertThat(repository.findByProductId(productId)).isEmpty();
 
         deleteAndVerifyRecommendationsByProductId(productId, OK);
     }

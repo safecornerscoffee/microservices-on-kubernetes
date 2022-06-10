@@ -72,8 +72,8 @@ class ReviewRepositoryTest {
 
     @Test
     void duplicateError() {
+        ReviewEntity newEntity = new ReviewEntity(1, 2, "a", "s", "c");
         assertThatThrownBy(() -> {
-            ReviewEntity newEntity = new ReviewEntity(1, 2, "a", "s", "c");
             repository.save(newEntity);
         }).isInstanceOf(DataIntegrityViolationException.class);
     }
@@ -86,8 +86,8 @@ class ReviewRepositoryTest {
         entity1.setAuthor("a1");
         repository.save(entity1);
 
+        entity2.setAuthor("a2");
         assertThatThrownBy(() -> {
-            entity2.setAuthor("a2");
             repository.save(entity2);
         }).isInstanceOf(OptimisticLockingFailureException.class);
 

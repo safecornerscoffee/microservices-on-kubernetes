@@ -2,12 +2,12 @@ package com.safecornerscoffee.microservices.core.product.mapper;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class CarMapperTest {
+class CarMapperTest {
 
     @Test
-    public void shouldMapCarToDto() {
+    void shouldMapCarToDto() {
         //given
         Car car = new Car( "Morris", 5, CarType.SEDAN );
 
