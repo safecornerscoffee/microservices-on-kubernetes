@@ -23,10 +23,10 @@ class RecommendationRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository.deleteAll();
+        repository.deleteAll().block();
 
         RecommendationEntity entity = new RecommendationEntity(1, 2, "a", 4, "c");
-        savedEntity = repository.save(entity);
+        savedEntity = repository.save(entity).block();
 
         assertEqualsRecommendation(savedEntity, entity);
     }
@@ -34,34 +34,35 @@ class RecommendationRepositoryTest {
     @Test
     void create() {
         RecommendationEntity newEntity = new RecommendationEntity(1, 3, "a", 3, "c");
-        repository.save(newEntity);
+        repository.save(newEntity).block();
 
-        RecommendationEntity foundEntity = repository.findById(newEntity.getId()).get();
+        RecommendationEntity foundEntity = repository.findById(newEntity.getId()).block();
 
         assertEqualsRecommendation(foundEntity, newEntity);
 
-        assertThat(repository.count()).isEqualTo(2);
+        assertThat(repository.count().block()).isEqualTo(2);
     }
 
     @Test
     void update() {
         savedEntity.setAuthor("a2");
-        repository.save(savedEntity);
+        repository.save(savedEntity).block();
 
-        RecommendationEntity foundEntity = repository.findById(savedEntity.getId()).get();
+        RecommendationEntity foundEntity = repository.findById(savedEntity.getId()).block();
+
         assertThat(foundEntity.getVersion()).isEqualTo(1);
         assertThat(foundEntity.getAuthor()).isEqualTo("a2");
     }
 
     @Test
     void delete() {
-        repository.delete(savedEntity);
-        assertThat(repository.existsById(savedEntity.getId())).isFalse();
+        repository.delete(savedEntity).block();
+        assertThat(repository.existsById(savedEntity.getId()).block()).isFalse();
     }
 
     @Test
     void getByProductId() {
-        List<RecommendationEntity> entityList = repository.findByProductId(savedEntity.getProductId());
+        List<RecommendationEntity> entityList = repository.findByProductId(savedEntity.getProductId()).collectList().block();
 
         assertThat(entityList).hasSize(1);
         assertEqualsRecommendation(entityList.get(0), savedEntity);
@@ -72,24 +73,24 @@ class RecommendationRepositoryTest {
         RecommendationEntity entity = new RecommendationEntity(savedEntity.getProductId(), savedEntity.getRecommendationId(),
                 "a", 2, "c");
         assertThatThrownBy(() -> {
-            repository.save(entity);
+            repository.save(entity).block();
         }).isInstanceOf(DuplicateKeyException.class);
     }
 
     @Test
     void optimisticLockError() {
-        RecommendationEntity entity1 = repository.findById(savedEntity.getId()).get();
-        RecommendationEntity entity2 = repository.findById(savedEntity.getId()).get();
+        RecommendationEntity entity1 = repository.findById(savedEntity.getId()).block();
+        RecommendationEntity entity2 = repository.findById(savedEntity.getId()).block();
 
         entity1.setAuthor("a1");
-        repository.save(entity1);
+        repository.save(entity1).block();
 
         entity2.setAuthor("a2");
         assertThatThrownBy(() -> {
-            repository.save(entity2);
+            repository.save(entity2).block();
         }).isInstanceOf(OptimisticLockingFailureException.class);
 
-        RecommendationEntity updatedEntity = repository.findById(savedEntity.getId()).get();
+        RecommendationEntity updatedEntity = repository.findById(savedEntity.getId()).block();
         assertThat(updatedEntity.getVersion()).isEqualTo(1);
         assertThat(updatedEntity.getAuthor()).isEqualTo("a1");
     }

@@ -10,8 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -28,7 +28,7 @@ class DefaultProductServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository.deleteAll();
+        StepVerifier.create(repository.deleteAll()).verifyComplete();
     }
     @Test
     void GetProductById() {
@@ -37,7 +37,10 @@ class DefaultProductServiceTest {
 
         postAndVerifyProduct(productId, OK);
 
-        assertThat(repository.findByProductId(productId)).isPresent();
+        repository.findByProductId(productId)
+                .as(StepVerifier::create)
+                .expectNextMatches(foundProduct -> foundProduct.getProductId() == productId)
+                .verifyComplete();
 
         getAndVerifyProduct(productId, OK)
                 .jsonPath("$.productId").isEqualTo(productId);
@@ -49,7 +52,9 @@ class DefaultProductServiceTest {
         int productId = 1;
         postAndVerifyProduct(productId, OK);
 
-        assertThat(repository.findByProductId(productId)).isPresent();
+        repository.findByProductId(productId).as(StepVerifier::create)
+                        .expectNextMatches(foundEntity -> foundEntity.getProductId() == productId)
+                        .verifyComplete();
 
         postAndVerifyProduct(productId, UNPROCESSABLE_ENTITY)
                 .jsonPath("$.path").isEqualTo("/product")
@@ -61,10 +66,15 @@ class DefaultProductServiceTest {
         int productId = 1;
 
         postAndVerifyProduct(productId, OK);
-        assertThat(repository.findByProductId(productId)).isPresent();
+
+        repository.findByProductId(productId).as(StepVerifier::create)
+                .expectNextMatches(foundEntity -> foundEntity.getProductId() == productId)
+                .verifyComplete();
 
         deleteAndVerifyProduct(productId, OK);
-        assertThat(repository.findByProductId(productId)).isNotPresent();
+        repository.findByProductId(productId).as(StepVerifier::create)
+                .expectNextMatches(foundEntity -> foundEntity.getProductId() == productId)
+                .verifyComplete();
 
         deleteAndVerifyProduct(productId, OK);
     }

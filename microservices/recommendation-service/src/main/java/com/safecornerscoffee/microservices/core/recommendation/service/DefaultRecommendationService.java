@@ -33,7 +33,7 @@ public class DefaultRecommendationService implements RecommendationService {
     public Recommendation createRecommendation(Recommendation body) {
         try {
             RecommendationEntity entity = mapper.apiToEntity(body);
-            RecommendationEntity newEntity = repository.save(entity);
+            RecommendationEntity newEntity = repository.save(entity).block();
 
             LOG.debug("createRecommendation: created a recommendation entity: {}/{}", body.getProductId(), body.getRecommendationId());
             return mapper.entityToApi(newEntity);
@@ -47,7 +47,7 @@ public class DefaultRecommendationService implements RecommendationService {
 
         if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-        List<RecommendationEntity> entityList = repository.findByProductId(productId);
+        List<RecommendationEntity> entityList = repository.findByProductId(productId).collectList().block();
         List<Recommendation> apiList = mapper.entityListToApiList(entityList);
 
         apiList.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));

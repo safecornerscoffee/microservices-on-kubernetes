@@ -31,7 +31,7 @@ public class DefaultProductService implements ProductService {
     public Product createProduct(Product body) {
         try {
             ProductEntity entity = mapper.apiToEntity(body);
-            ProductEntity newEntity = repository.save(entity);
+            ProductEntity newEntity = repository.save(entity).block();
 
             LOG.debug("createProduct: entity created for productId: {}", body.getProductId());
             return mapper.entityToApi(newEntity);
@@ -46,7 +46,7 @@ public class DefaultProductService implements ProductService {
 
         if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-        ProductEntity entity = repository.findByProductId(productId)
+        ProductEntity entity = repository.findByProductId(productId).blockOptional()
                 .orElseThrow(() -> new NotFoundException("No product found for productId: " + productId));
 
         Product response = mapper.entityToApi(entity);
@@ -59,6 +59,6 @@ public class DefaultProductService implements ProductService {
     @Override
     public void deleteProduct(int productId) {
         LOG.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
-        repository.findByProductId(productId).ifPresent(repository::delete);
+        repository.findByProductId(productId).blockOptional().ifPresent(repository::delete);
     }
 }

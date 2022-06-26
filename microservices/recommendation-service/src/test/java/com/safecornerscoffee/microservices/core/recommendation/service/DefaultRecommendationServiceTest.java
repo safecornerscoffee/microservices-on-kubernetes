@@ -40,7 +40,7 @@ class DefaultRecommendationServiceTest {
         postAndVerifyRecommendation(productId, 2, OK);
         postAndVerifyRecommendation(productId, 3, OK);
 
-        assertThat(repository.findByProductId(productId)).hasSize(3);
+        assertThat(repository.findByProductId(productId).collectList().block()).hasSize(3);
 
         getAndVerifyRecommendation(productId, OK);
     }
@@ -69,10 +69,10 @@ class DefaultRecommendationServiceTest {
         int recommendationId = 1;
 
         postAndVerifyRecommendation(productId, recommendationId, OK);
-        assertThat(repository.findByProductId(productId)).hasSize(1);
+        assertThat(repository.findByProductId(productId).collectList().block()).hasSize(1);
 
         deleteAndVerifyRecommendationsByProductId(productId, OK);
-        assertThat(repository.findByProductId(productId)).isEmpty();
+        assertThat(repository.findByProductId(productId).collectList().block()).isEmpty();
 
         deleteAndVerifyRecommendationsByProductId(productId, OK);
     }
