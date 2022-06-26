@@ -7,12 +7,17 @@ import com.safecornerscoffee.microservices.api.core.recommendation.Recommendatio
 import com.safecornerscoffee.microservices.api.core.recommendation.RecommendationService;
 import com.safecornerscoffee.microservices.api.core.review.Review;
 import com.safecornerscoffee.microservices.api.core.review.ReviewService;
+import com.safecornerscoffee.microservices.api.event.Event;
 import com.safecornerscoffee.microservices.util.exception.InvalidInputException;
 import com.safecornerscoffee.microservices.util.exception.NotFoundException;
 import com.safecornerscoffee.microservices.util.http.HttpErrorInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -21,6 +26,10 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
+import static com.safecornerscoffee.microservices.api.event.Event.Type.CREATE;
+import static com.safecornerscoffee.microservices.api.event.Event.Type.DELETE;
+
+@EnableBinding(ProductCompositeIntegration.MessageSources.class)
 @Component
 public class ProductCompositeIntegration implements ProductService, RecommendationService, ReviewService {
 
@@ -34,9 +43,25 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     private final String recommendationServiceUrl;
     private final String reviewServiceUrl;
 
+    private MessageSources messageSources;
+    public interface MessageSources {
+
+        String OUTPUT_PRODUCTS = "output-products";
+        String OUTPUT_RECOMMENDATIONS = "output-recommendations";
+        String OUTPUT_REVIEWS = "output-reviews";
+
+        @Output(OUTPUT_PRODUCTS)
+        MessageChannel outputProducts();
+
+        @Output(OUTPUT_RECOMMENDATIONS)
+        MessageChannel outputRecommendations();
+        @Output(OUTPUT_REVIEWS)
+        MessageChannel outputReviews();
+    }
     public ProductCompositeIntegration(
             WebClient.Builder webClientBuilder,
             ObjectMapper objectMapper,
+            MessageSources messageSources,
             @Value("${app.product-service.host}") String productServiceHost,
             @Value("${app.product-service.port}") int productServicePort,
             @Value("${app.recommendation-service.host}") String recommendationServiceHost,
@@ -47,6 +72,8 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
         this.webClient = webClientBuilder.build();
         this.objectMapper = objectMapper;
+        this.messageSources = messageSources;
+
         this.productServiceUrl = scheme + productServiceHost + ":" + productServicePort + "/product";
         this.recommendationServiceUrl = scheme + recommendationServiceHost + ":" + recommendationServicePort + "/recommendation";
         this.reviewServiceUrl = scheme + reviewServiceHost + ":" + reviewServicePort + "/review";
@@ -55,14 +82,12 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     @Override
     public Mono<Product> createProduct(Product body) {
-        String url = productServiceUrl;
-        LOG.debug("Will post a new product to URL: {}", url);
 
-        return webClient.post()
-                .uri(url)
-                .body(Mono.just(body), Product.class)
-                .retrieve()
-                .bodyToMono(Product.class);
+        messageSources.outputProducts().send(
+                MessageBuilder.withPayload(new Event<>(CREATE, body.getProductId(), body)).build()
+        );
+
+        return Mono.just(body);
 
     }
 
@@ -81,26 +106,23 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     @Override
     public Mono<Void> deleteProduct(int productId) {
 
-        String url = productServiceUrl + "/" + productId;
-        LOG.debug("Will call the deleteProduct API on URL: {}", url);
+        messageSources.outputProducts().send(
+                MessageBuilder.withPayload(new Event<>(DELETE, productId, null)).build()
+        );
 
-        return webClient.delete()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(Void.class);
+        return Mono.never().then();
     }
 
     @Override
     public Mono<Recommendation> createRecommendation(Recommendation body) {
-        String url = recommendationServiceUrl;
-        LOG.debug("Will post a new recommendation to URL: {}", url);
 
-        return webClient.post()
-                .uri(url)
-                .body(Mono.just(body), Recommendation.class)
-                .retrieve()
-                .bodyToMono(Recommendation.class)
-                .onErrorMap(this::handleException);
+        messageSources.outputRecommendations().send(
+                MessageBuilder.withPayload(
+                        new Event<>(CREATE, body.getProductId(), body)
+                ).build()
+        );
+
+        return Mono.just(body);
 
     }
 
@@ -119,26 +141,16 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     @Override
     public Mono<Void> deleteRecommendations(int productId) {
-        String url = recommendationServiceUrl + "?productId=" + productId;
-        LOG.debug("Will call the deleteRecommendations API on URL: {}", url);
-
-        return webClient
-                .delete()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .onErrorMap(this::handleException);
+        messageSources.outputRecommendations().send(
+                MessageBuilder.withPayload(new Event<>(DELETE, productId, null)).build());
+        return Mono.never().then();
     }
 
     @Override
     public Mono<Review> createReview(Review body) {
-        String url = reviewServiceUrl;
-        LOG.debug("Will post a new review to URL: {}", url);
-
-        return webClient.post().uri(url).body(Mono.just(body), Review.class)
-                .retrieve()
-                .bodyToMono(Review.class)
-                .onErrorMap(this::handleException);
+        messageSources.outputReviews().send(
+                MessageBuilder.withPayload(new Event<>(CREATE, body.getProductId(), body)).build());
+        return Mono.just(body);
     }
 
     @Override
@@ -155,16 +167,10 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     @Override
     public Mono<Void> deleteReviews(int productId) {
-        String url = reviewServiceUrl + "?productId=" + productId;
-        LOG.debug("Will call the deleteReviews API on URL: {}", url);
-
-        return webClient
-                .delete()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .onErrorMap(this::handleException);
-
+        messageSources.outputReviews().send(
+                MessageBuilder.withPayload(new Event<>(DELETE, productId, null)).build()
+        );
+        return Mono.never().then();
     }
 
     private Throwable handleException(Throwable ex) {

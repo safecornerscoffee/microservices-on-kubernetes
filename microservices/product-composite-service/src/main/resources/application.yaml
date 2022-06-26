@@ -5,6 +5,27 @@ spring:
     group:
       default: ["default", "swagger"]
       docker: ["docker", "swagger"]
+  cloud:
+    stream:
+      default-binder: rabbit
+      default.contentType: application/json
+      bindings:
+        output-products:
+          destination: products
+        output-recommendations:
+          destination: recommendations
+        output-reviews:
+          destination: reviews
+      kafka:
+        binder:
+          brokers: localhost
+          defaultBrokerPort: 9092
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
 
 server:
   port: 7000
