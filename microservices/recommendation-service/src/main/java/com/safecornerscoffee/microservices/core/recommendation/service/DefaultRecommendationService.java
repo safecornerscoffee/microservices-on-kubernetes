@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 public class DefaultRecommendationService implements RecommendationService {
@@ -30,36 +30,27 @@ public class DefaultRecommendationService implements RecommendationService {
     }
 
     @Override
-    public Recommendation createRecommendation(Recommendation body) {
-        try {
-            RecommendationEntity entity = mapper.apiToEntity(body);
-            RecommendationEntity newEntity = repository.save(entity).block();
-
-            LOG.debug("createRecommendation: created a recommendation entity: {}/{}", body.getProductId(), body.getRecommendationId());
-            return mapper.entityToApi(newEntity);
-        } catch (DuplicateKeyException dke) {
-            throw new InvalidInputException("Duplicate key, Product Id: " + body.getProductId() + ", Recommendation Id:" + body.getRecommendationId());
-        }
+    public Mono<Recommendation> createRecommendation(Recommendation body) {
+        RecommendationEntity entity = mapper.apiToEntity(body);
+        return repository.save(entity)
+                .onErrorMap(DuplicateKeyException.class,
+                    dke -> new InvalidInputException("Duplicate key, Product Id: " + body.getProductId() + ", Recommendation Id:" + body.getRecommendationId()))
+                .map(mapper::entityToApi);
     }
 
     @Override
-    public List<Recommendation> getRecommendations(int productId) {
+    public Flux<Recommendation> getRecommendations(int productId) {
 
         if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-        List<RecommendationEntity> entityList = repository.findByProductId(productId).collectList().block();
-        List<Recommendation> apiList = mapper.entityListToApiList(entityList);
-
-        apiList.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));
-
-        LOG.debug("getRecommendations: response size: {}", apiList.size());
-
-        return apiList;
+        return repository.findByProductId(productId)
+                .map(mapper::entityToApi)
+                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
     @Override
-    public void deleteRecommendations(int productId) {
+    public Mono<Void> deleteRecommendations(int productId) {
         LOG.debug("deleteRecommendations: tries to delete recommendations for the product with productId: {}", productId);
-        repository.deleteAll(repository.findByProductId(productId));
+        return repository.deleteAll(repository.findByProductId(productId));
     }
 }

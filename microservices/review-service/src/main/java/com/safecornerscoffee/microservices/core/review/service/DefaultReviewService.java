@@ -11,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 
 import java.util.List;
 
@@ -22,45 +25,52 @@ public class DefaultReviewService implements ReviewService {
     private final ReviewRepository repository;
     private final ReviewMapper mapper;
     private final ServiceUtil serviceUtil;
+    private final Scheduler scheduler;
 
-    public DefaultReviewService(ReviewRepository repository, ReviewMapper mapper, ServiceUtil serviceUtil) {
+    public DefaultReviewService(ReviewRepository repository, ReviewMapper mapper, ServiceUtil serviceUtil, Scheduler scheduler) {
         this.repository = repository;
         this.mapper = mapper;
         this.serviceUtil = serviceUtil;
+        this.scheduler = scheduler;
     }
 
     @Override
-    public Review createReview(Review body) {
-        try {
-            ReviewEntity entity = mapper.apiToEntity(body);
-            ReviewEntity newEntity = repository.save(entity);
+    public Mono<Review> createReview(Review body) {
 
-            LOG.debug("createReview: created a review entity: {}/{}", body.getProductId(), body.getReviewId());
-            return mapper.entityToApi(newEntity);
-        } catch (DataIntegrityViolationException dive) {
-            throw new InvalidInputException("Duplicate key, Product Id: " + body.getProductId() + ", Review Id:" + body.getReviewId());
-        }
+        ReviewEntity entity = mapper.apiToEntity(body);
+        return Mono.fromCallable(() -> repository.save(entity))
+                .publishOn(scheduler)
+                .onErrorMap(DataIntegrityViolationException.class, dive -> new InvalidInputException("Duplicate key, Product Id: " + body.getProductId() + ", Review Id:" + body.getReviewId()))
+                .map(mapper::entityToApi)
+                .log();
     }
 
+
     @Override
-    public List<Review> getReviews(int productId) {
+    public Flux<Review> getReviews(int productId) {
 
         if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
+        return asyncFlux(getByProductId(productId));
+    }
 
-        List<ReviewEntity> entityList = repository.findByProductId(productId);
-        List<Review> list = mapper.entityListToApiList(entityList);
+    protected List<Review> getByProductId(int productId) {
+        return repository.findByProductId(productId)
+                .stream()
+                .map(mapper::entityToApi)
+                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;})
+                .toList();
+    }
 
-        list.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));
-
-        LOG.debug("getReviews: response size: {}", list.size());
-
-        return list;
+    private <T> Flux<T> asyncFlux(Iterable<T> iterable) {
+        return Flux.fromIterable(iterable).publishOn(scheduler);
     }
 
     @Override
-    public void deleteReviews(int productId) {
+    public Mono<Void> deleteReviews(int productId) {
         LOG.debug("deleteReviews: tries to delete reviews for the product with productId: {}", productId);
-        repository.deleteAll(repository.findByProductId(productId));
+        return  Mono.fromRunnable(() -> {
+            repository.deleteAll(repository.findByProductId(productId));
+        }).publishOn(scheduler).then();
     }
 }

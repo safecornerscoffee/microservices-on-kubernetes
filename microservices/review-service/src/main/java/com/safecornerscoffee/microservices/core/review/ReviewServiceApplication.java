@@ -19,5 +19,4 @@ public class ReviewServiceApplication {
 		String datasourceUri = ctx.getEnvironment().getProperty("spring.datasource.url");
 		LOG.info("Connected to MariaDB: {}", datasourceUri);
 	}
-
 }

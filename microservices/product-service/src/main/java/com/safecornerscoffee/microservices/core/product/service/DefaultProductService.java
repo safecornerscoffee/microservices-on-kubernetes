@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 public class DefaultProductService implements ProductService {
@@ -28,37 +29,36 @@ public class DefaultProductService implements ProductService {
     }
 
     @Override
-    public Product createProduct(Product body) {
-        try {
+    public Mono<Product> createProduct(Product body) {
             ProductEntity entity = mapper.apiToEntity(body);
-            ProductEntity newEntity = repository.save(entity).block();
 
-            LOG.debug("createProduct: entity created for productId: {}", body.getProductId());
-            return mapper.entityToApi(newEntity);
-        } catch (DuplicateKeyException dke) {
-            throw new InvalidInputException("Duplicate key, Product Id: " + body.getProductId());
-        }
+            return repository.save(entity)
+                    .onErrorMap(DuplicateKeyException.class,
+                            dke -> new InvalidInputException("Duplicate key, Product Id: " + body.getProductId()))
+                    .map(mapper::entityToApi);
     }
 
     @Override
-    public Product getProduct(int productId) {
+    public Mono<Product> getProduct(int productId) {
         LOG.debug("getProduct: tries to find an entity with productId: {}", productId);
 
         if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-        ProductEntity entity = repository.findByProductId(productId).blockOptional()
-                .orElseThrow(() -> new NotFoundException("No product found for productId: " + productId));
+        return repository.findByProductId(productId)
+                .switchIfEmpty(Mono.error(new NotFoundException("No product found for productId: " + productId)))
+                .log()
+                .map(mapper::entityToApi)
+                .map(product -> {
+                    product.setServiceAddress(serviceUtil.getServiceAddress());
+                    return product;
+                });
 
-        Product response = mapper.entityToApi(entity);
-        response.setServiceAddress(serviceUtil.getServiceAddress());
-
-        LOG.debug("getProduct: found productId={}", response.getProductId());
-        return response;
     }
 
     @Override
-    public void deleteProduct(int productId) {
+    public Mono<Void> deleteProduct(int productId) {
         LOG.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
-        repository.findByProductId(productId).blockOptional().ifPresent(repository::delete);
+        return repository.findByProductId(productId)
+                .flatMap(repository::delete);
     }
 }

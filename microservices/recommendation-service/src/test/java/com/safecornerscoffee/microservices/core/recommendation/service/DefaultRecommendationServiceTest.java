@@ -10,8 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -28,7 +28,7 @@ class DefaultRecommendationServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository.deleteAll();
+        repository.deleteAll().as(StepVerifier::create).verifyComplete();
     }
 
     @Test
@@ -40,7 +40,10 @@ class DefaultRecommendationServiceTest {
         postAndVerifyRecommendation(productId, 2, OK);
         postAndVerifyRecommendation(productId, 3, OK);
 
-        assertThat(repository.findByProductId(productId).collectList().block()).hasSize(3);
+        repository.findByProductId(productId)
+                .as(StepVerifier::create)
+                .expectNextCount(3)
+                .verifyComplete();
 
         getAndVerifyRecommendation(productId, OK);
     }
@@ -54,13 +57,13 @@ class DefaultRecommendationServiceTest {
                 .jsonPath("$.productId").isEqualTo(productId)
                 .jsonPath("$.recommendationId").isEqualTo(recommendationId);
 
-        assertThat(repository.count()).isEqualTo(1);
+        repository.count().as(StepVerifier::create).expectNext(1L).verifyComplete();
 
         postAndVerifyRecommendation(productId, recommendationId, UNPROCESSABLE_ENTITY)
                 .jsonPath("$.path").isEqualTo("/recommendation")
                 .jsonPath("$.message").isEqualTo("Duplicate key, Product Id: 1, Recommendation Id:1");
 
-        assertThat(repository.count()).isEqualTo(1);
+        repository.count().as(StepVerifier::create).expectNext(1L).verifyComplete();
     }
 
     @Test
@@ -69,10 +72,12 @@ class DefaultRecommendationServiceTest {
         int recommendationId = 1;
 
         postAndVerifyRecommendation(productId, recommendationId, OK);
-        assertThat(repository.findByProductId(productId).collectList().block()).hasSize(1);
+
+        repository.findByProductId(productId).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
         deleteAndVerifyRecommendationsByProductId(productId, OK);
-        assertThat(repository.findByProductId(productId).collectList().block()).isEmpty();
+
+        repository.findByProductId(productId).as(StepVerifier::create).verifyComplete();
 
         deleteAndVerifyRecommendationsByProductId(productId, OK);
     }

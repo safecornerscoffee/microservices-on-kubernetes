@@ -72,9 +72,7 @@ class DefaultProductServiceTest {
                 .verifyComplete();
 
         deleteAndVerifyProduct(productId, OK);
-        repository.findByProductId(productId).as(StepVerifier::create)
-                .expectNextMatches(foundEntity -> foundEntity.getProductId() == productId)
-                .verifyComplete();
+        repository.findByProductId(productId).as(StepVerifier::create).verifyComplete();
 
         deleteAndVerifyProduct(productId, OK);
     }
