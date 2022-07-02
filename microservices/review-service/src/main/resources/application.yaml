@@ -17,6 +17,37 @@ spring:
     hibernate:
       ddl-auto: create
 
+  cloud:
+    stream:
+      default-binder: rabbit
+      default.contentType: application/json
+      bindings:
+        input:
+          destination: reviews
+          group: reviewsGroup
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 500
+            back-off-max-interval: 1000
+            back-off-multiplier: 2.0
+      rabbit:
+        bindings:
+          input:
+            consumer:
+              autoBindDlq: true
+              republish-to-dlq: true
+      kafka:
+        binder:
+          brokers: 127.0.0.1
+          port: 5672
+          username: guest
+          password: guest
+        bindings:
+          input:
+            consumer:
+              enable-dlq: true
+
+
 server:
   port: 7003
   error:
@@ -25,6 +56,9 @@ server:
 eureka:
   client:
     enabled: false
+
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
 
 logging:
   level:
@@ -39,6 +73,8 @@ spring.config.activate.on-profile: docker
 server:
   port: 8080
 
-spring:
-  datasource:
-    url: jdbc:mariadb://mariadb:3306/review-db
+spring.datasource.url: jdbc:mariadb://mariadb:3306/review-db
+
+spring.rabbitmq.host: rabbitmq
+
+spring.cloud.stream.kafka.binder.brokers: kafka

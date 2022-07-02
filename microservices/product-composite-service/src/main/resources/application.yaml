@@ -12,14 +12,21 @@ spring:
       bindings:
         output-products:
           destination: products
+          producer:
+            required-groups: auditGroup
         output-recommendations:
           destination: recommendations
+          producer:
+            required-groups: auditGroup
         output-reviews:
           destination: reviews
+          producer:
+            required-groups: auditGroup
       kafka:
         binder:
           brokers: localhost
           defaultBrokerPort: 9092
+
   rabbitmq:
     host: localhost
     port: 5672
@@ -46,6 +53,9 @@ app:
 eureka:
   client:
     enabled: false
+
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
 
 logging:
   level:
