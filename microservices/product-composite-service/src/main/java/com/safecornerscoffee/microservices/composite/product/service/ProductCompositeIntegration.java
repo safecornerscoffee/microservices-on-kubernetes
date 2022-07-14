@@ -36,7 +36,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    private final static String scheme = "lb://";
+    private final static String scheme = "http://";
     private final String productServiceUrl;
     private final String recommendationServiceUrl;
     private final String reviewServiceUrl;
