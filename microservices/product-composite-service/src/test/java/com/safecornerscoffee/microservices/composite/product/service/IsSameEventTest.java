@@ -13,11 +13,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-public class IsSameEventTest {
+class IsSameEventTest {
     ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void testEventObjectCompare() throws JsonProcessingException {
+    void testEventObjectCompare() throws JsonProcessingException {
 
         // Event #1 and #2 are the same event, but occurs as different times
         // Event #3 and #4 are different events

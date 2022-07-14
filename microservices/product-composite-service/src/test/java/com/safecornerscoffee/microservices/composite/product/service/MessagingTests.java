@@ -34,7 +34,7 @@ import static org.springframework.http.HttpStatus.OK;
 @SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
         "eureka.client.enabled=false"
 })
-public class MessagingTests {
+class MessagingTests {
 
     private static final int PRODUCT_ID_OK = 1;
     private static final int PRODUCT_ID_NOT_FOUND = 2;
@@ -79,7 +79,7 @@ public class MessagingTests {
     }
 
     @Test
-    public void createCompositeProduct2() {
+    void createCompositeProduct2() {
 
         ProductAggregate composite = new ProductAggregate(1, "name", 1,
                 singletonList(new RecommendationSummary(1, "a", 1, "c")),
@@ -109,7 +109,7 @@ public class MessagingTests {
     }
 
     @Test
-    public void deleteCompositeProduct() {
+    void deleteCompositeProduct() {
 
         deleteAndVerifyProduct(1, OK);
 
