@@ -25,7 +25,7 @@ public class MessageProcessor {
     public void process(Event<Integer, Product> event) {
         LOG.info("Process message created at {}...", event.getEventCreatedAt());
 
-        switch (event.getType()) {
+        switch (event.getEventType()) {
             case CREATE -> {
                 Product product = event.getData();
                 LOG.info("Create product with ID: {}", product.getProductId());
@@ -39,7 +39,7 @@ public class MessageProcessor {
 
             }
             default -> {
-                String errorMessage = "Incorrect event type: " + event.getType() + ", expected a CREATE or DELETE event";
+                String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a CREATE or DELETE event";
                 LOG.warn(errorMessage);
                 throw new EventProcessingException(errorMessage);
             }

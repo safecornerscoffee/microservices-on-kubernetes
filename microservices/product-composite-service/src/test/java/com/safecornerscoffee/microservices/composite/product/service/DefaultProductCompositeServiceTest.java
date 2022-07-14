@@ -21,13 +21,16 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
+        "eureka.client.enabled=false"
+})
 @AutoConfigureWebTestClient
 class DefaultProductCompositeServiceTest {
 
@@ -61,6 +64,9 @@ class DefaultProductCompositeServiceTest {
         ProductAggregate compositeProduct = new ProductAggregate(1, "name", 1,
                 null, null,null);
 
+        Product product = new Product(compositeProduct.getProductId(), compositeProduct.getName(), compositeProduct.getWeight(), null);
+        when(compositeIntegration.createProduct(any(Product.class))).thenReturn(Mono.just(product));
+        
         postAndVerifyProduct(compositeProduct, OK);
     }
     @Test
@@ -70,6 +76,16 @@ class DefaultProductCompositeServiceTest {
                 Collections.singletonList(new ReviewSummary(1, "a", "s", "c")),
                 null);
 
+        Product product = new Product(compositeProduct.getProductId(), compositeProduct.getName(), compositeProduct.getWeight(), null);
+        when(compositeIntegration.createProduct(any(Product.class))).thenReturn(Mono.just(product));
+
+        Recommendation recommendation = new Recommendation(compositeProduct.getProductId(), 1, "a", 1, "c", null);
+        when(compositeIntegration.createRecommendation(any(Recommendation.class))).thenReturn(Mono.just(recommendation));
+
+        Review review = new Review(compositeProduct.getProductId(), 1, "a", "s", "c", null);
+        when(compositeIntegration.createReview(any(Review.class))).thenReturn(Mono.just(review));
+
+
         postAndVerifyProduct(compositeProduct, OK);
     }
     @Test
@@ -78,6 +94,16 @@ class DefaultProductCompositeServiceTest {
                 Collections.singletonList(new RecommendationSummary(1, "a", 1, "c")),
                 Collections.singletonList(new ReviewSummary(1, "a", "s", "c")),
                 null);
+
+        Product product = new Product(compositeProduct.getProductId(), compositeProduct.getName(), compositeProduct.getWeight(), null);
+        when(compositeIntegration.createProduct(any(Product.class))).thenReturn(Mono.just(product));
+
+        Recommendation recommendation = new Recommendation(compositeProduct.getProductId(), 1, "a", 1, "c", null);
+        when(compositeIntegration.createRecommendation(any(Recommendation.class))).thenReturn(Mono.just(recommendation));
+
+        Review review = new Review(compositeProduct.getProductId(), 1, "a", "s", "c", null);
+        when(compositeIntegration.createReview(any(Review.class))).thenReturn(Mono.just(review));
+
 
         postAndVerifyProduct(compositeProduct, OK);
 

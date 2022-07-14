@@ -25,7 +25,7 @@ public class MessageProcessor {
 
         LOG.info("Process message created at {}...", event.getEventCreatedAt());
 
-        switch (event.getType()) {
+        switch (event.getEventType()) {
 
             case CREATE:
                 Review review = event.getData();
@@ -40,7 +40,7 @@ public class MessageProcessor {
                 break;
 
             default:
-                String errorMessage = "Incorrect event type: " + event.getType() + ", expected a CREATE or DELETE event";
+                String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a CREATE or DELETE event";
                 LOG.warn(errorMessage);
                 throw new EventProcessingException(errorMessage);
         }

@@ -18,7 +18,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
         "spring.datasource.url=jdbc:h2:mem:review-db",
         "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect"
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+        "eureka.client.enabled=false"
 })
 class DefaultReviewServiceTest {
 

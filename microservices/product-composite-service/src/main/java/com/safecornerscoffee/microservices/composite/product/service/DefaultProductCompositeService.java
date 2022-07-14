@@ -30,23 +30,23 @@ public class DefaultProductCompositeService implements ProductCompositeService {
             LOG.debug("createCompositeProduct: creates a new composite entity for productId: {}", body.getProductId());
 
             Product product = new Product(body.getProductId(), body.getName(), body.getWeight(), null);
-            integration.createProduct(product);
+            integration.createProduct(product).subscribe();
 
             if (body.getRecommendations() != null) {
                 body.getRecommendations().forEach(r -> {
                     Recommendation recommendation = new Recommendation(body.getProductId(), r.getRecommendationId(), r.getAuthor(), r.getRate(), r.getContent(), null);
-                    integration.createRecommendation(recommendation);
+                    integration.createRecommendation(recommendation).subscribe();
                 });
             }
 
             if (body.getReviews() != null) {
                 body.getReviews().forEach(r -> {
                     Review review = new Review(body.getProductId(), r.getReviewId(), r.getAuthor(), r.getSubject(), r.getContent(), null);
-                    integration.createReview(review);
+                    integration.createReview(review).subscribe();
                 });
             }
 
-            LOG.debug("createCompositeProduct: composite entites created for productId: {}", body.getProductId());
+            LOG.debug("createCompositeProduct: composite entities created for productId: {}", body.getProductId());
 
         } catch (RuntimeException re) {
             LOG.warn("createCompositeProduct failed", re);

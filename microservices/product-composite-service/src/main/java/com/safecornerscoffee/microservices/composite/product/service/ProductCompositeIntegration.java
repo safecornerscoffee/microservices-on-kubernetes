@@ -13,11 +13,8 @@ import com.safecornerscoffee.microservices.util.exception.NotFoundException;
 import com.safecornerscoffee.microservices.util.http.HttpErrorInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.annotation.Output;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -30,7 +27,7 @@ import java.io.IOException;
 import static com.safecornerscoffee.microservices.api.event.Event.Type.CREATE;
 import static com.safecornerscoffee.microservices.api.event.Event.Type.DELETE;
 
-@EnableBinding(ProductCompositeIntegration.MessageSources.class)
+@EnableBinding(MessageSources.class)
 @Component
 public class ProductCompositeIntegration implements ProductService, RecommendationService, ReviewService {
 
@@ -39,55 +36,32 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    private final static String scheme = "http://";
+    private final static String scheme = "lb://";
     private final String productServiceUrl;
     private final String recommendationServiceUrl;
     private final String reviewServiceUrl;
+    private final MessageSources messageSources;
 
-    private MessageSources messageSources;
-    public interface MessageSources {
-
-        String OUTPUT_PRODUCTS = "output-products";
-        String OUTPUT_RECOMMENDATIONS = "output-recommendations";
-        String OUTPUT_REVIEWS = "output-reviews";
-
-        @Output(OUTPUT_PRODUCTS)
-        MessageChannel outputProducts();
-
-        @Output(OUTPUT_RECOMMENDATIONS)
-        MessageChannel outputRecommendations();
-        @Output(OUTPUT_REVIEWS)
-        MessageChannel outputReviews();
-    }
     public ProductCompositeIntegration(
             WebClient.Builder webClientBuilder,
             ObjectMapper objectMapper,
-            MessageSources messageSources,
-            @Value("${app.product-service.host}") String productServiceHost,
-            @Value("${app.product-service.port}") int productServicePort,
-            @Value("${app.recommendation-service.host}") String recommendationServiceHost,
-            @Value("${app.recommendation-service.port}") int recommendationServicePort,
-            @Value("${app.review-service.host}") String reviewServiceHost,
-            @Value("${app.review-service.port}") int reviewServicePort
+            MessageSources messageSources
     ) {
 
         this.webClient = webClientBuilder.build();
         this.objectMapper = objectMapper;
         this.messageSources = messageSources;
 
-        this.productServiceUrl = scheme + productServiceHost + ":" + productServicePort + "/product";
-        this.recommendationServiceUrl = scheme + recommendationServiceHost + ":" + recommendationServicePort + "/recommendation";
-        this.reviewServiceUrl = scheme + reviewServiceHost + ":" + reviewServicePort + "/review";
+        this.productServiceUrl = scheme + "product-service" + "/product";
+        this.recommendationServiceUrl = scheme + "recommendation-service" + "/recommendation";
+        this.reviewServiceUrl = scheme + "review-service"+ "/review";
 
     }
 
     @Override
     public Mono<Product> createProduct(Product body) {
 
-        messageSources.outputProducts().send(
-                MessageBuilder.withPayload(new Event<>(CREATE, body.getProductId(), body)).build()
-        );
-
+        messageSources.outputProducts().send( MessageBuilder.withPayload(new Event<>(CREATE, body.getProductId(), body)).build());
         return Mono.just(body);
 
     }

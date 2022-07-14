@@ -20,7 +20,6 @@ spring:
   cloud:
     stream:
       default-binder: rabbit
-      default.contentType: application/json
       bindings:
         input:
           destination: reviews
@@ -30,23 +29,6 @@ spring:
             back-off-initial-interval: 500
             back-off-max-interval: 1000
             back-off-multiplier: 2.0
-      rabbit:
-        bindings:
-          input:
-            consumer:
-              autoBindDlq: true
-              republish-to-dlq: true
-      kafka:
-        binder:
-          brokers: 127.0.0.1
-          port: 5672
-          username: guest
-          password: guest
-        bindings:
-          input:
-            consumer:
-              enable-dlq: true
-
 
 server:
   port: 7003
@@ -55,7 +37,15 @@ server:
 
 eureka:
   client:
-    enabled: false
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    fetchRegistry: true
+    registerWithEureka: true
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseExpirationDurationInSeconds: 5
+    leaseRenewalIntervalInSeconds: 5
 
 management.endpoint.health.show-details: "ALWAYS"
 management.endpoints.web.exposure.include: "*"
@@ -78,3 +68,5 @@ spring.datasource.url: jdbc:mariadb://mariadb:3306/review-db
 spring.rabbitmq.host: rabbitmq
 
 spring.cloud.stream.kafka.binder.brokers: kafka
+
+eureka.client.serviceUrl.defaultZone: http://eureka:8761/eureka/
