@@ -17,15 +17,15 @@ import static springfox.documentation.builders.RequestHandlerSelectors.basePacka
 import static springfox.documentation.spi.DocumentationType.SWAGGER_2;
 
 @Configuration
-@EnableConfigurationProperties(MyApiInfo.class)
+@EnableConfigurationProperties(SwaggerAPIGeneralInfoProperties.class)
 public class SwaggerConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(SwaggerConfiguration.class);
 
-    private final MyApiInfo myApiInfo;
+    private final SwaggerAPIGeneralInfoProperties swaggerAPIGeneralInfoProperties;
 
-    public SwaggerConfiguration(MyApiInfo myApiInfo) {
-        this.myApiInfo = myApiInfo;
+    public SwaggerConfiguration(SwaggerAPIGeneralInfoProperties swaggerAPIGeneralInfoProperties) {
+        this.swaggerAPIGeneralInfoProperties = swaggerAPIGeneralInfoProperties;
     }
 
     @Bean
@@ -40,16 +40,16 @@ public class SwaggerConfiguration {
     }
 
     private ApiInfo apiInfo() {
-        LOG.debug("MyApiInfo: {}", myApiInfo);
+        LOG.debug("MyApiInfo: {}", swaggerAPIGeneralInfoProperties);
         
         return new ApiInfo(
-                myApiInfo.getTitle(),
-                myApiInfo.getDescription(),
-                myApiInfo.getVersion(),
-                myApiInfo.getTermsOfServiceUrl(),
-                new Contact(myApiInfo.getContact().getName(), myApiInfo.getContact().getUrl(), myApiInfo.getContact().getEmail()),
-                myApiInfo.getLicense(),
-                myApiInfo.getLicenseUrl(),
+                swaggerAPIGeneralInfoProperties.getTitle(),
+                swaggerAPIGeneralInfoProperties.getDescription(),
+                swaggerAPIGeneralInfoProperties.getVersion(),
+                swaggerAPIGeneralInfoProperties.getTermsOfServiceUrl(),
+                new Contact(swaggerAPIGeneralInfoProperties.getContact().getName(), swaggerAPIGeneralInfoProperties.getContact().getUrl(), swaggerAPIGeneralInfoProperties.getContact().getEmail()),
+                swaggerAPIGeneralInfoProperties.getLicense(),
+                swaggerAPIGeneralInfoProperties.getLicenseUrl(),
                 Collections.emptyList()
         );
     }

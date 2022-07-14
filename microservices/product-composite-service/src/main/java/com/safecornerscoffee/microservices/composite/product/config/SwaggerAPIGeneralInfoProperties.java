@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "api.common")
-public class MyApiInfo {
+public class SwaggerAPIGeneralInfoProperties {
 
     String version;
     String title;

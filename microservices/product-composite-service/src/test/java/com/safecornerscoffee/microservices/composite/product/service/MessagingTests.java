@@ -31,7 +31,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static org.springframework.cloud.stream.test.matcher.MessageQueueMatcher.receivesPayloadThat;
 import static org.springframework.http.HttpStatus.OK;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
+        "eureka.client.enabled=false"
+})
 public class MessagingTests {
 
     private static final int PRODUCT_ID_OK = 1;
@@ -42,7 +44,7 @@ public class MessagingTests {
     private WebTestClient client;
 
     @Autowired
-    private ProductCompositeIntegration.MessageSources channels;
+    private MessageSources channels;
 
     @Autowired
     private MessageCollector collector;

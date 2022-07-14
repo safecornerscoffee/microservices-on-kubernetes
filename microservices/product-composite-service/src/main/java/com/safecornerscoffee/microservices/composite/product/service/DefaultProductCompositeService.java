@@ -76,11 +76,11 @@ public class DefaultProductCompositeService implements ProductCompositeService {
 
         LOG.debug("deleteCompositeProduct: Deletes a product aggregate for productId: {}", productId);
 
-        integration.deleteProduct(productId);
+        integration.deleteProduct(productId).subscribe();
 
-        integration.deleteRecommendations(productId);
+        integration.deleteRecommendations(productId).subscribe();
 
-        integration.deleteReviews(productId);
+        integration.deleteReviews(productId).subscribe();
 
         LOG.debug("getCompositeProduct: aggregate entities deleted for productId: {}", productId);
     }
