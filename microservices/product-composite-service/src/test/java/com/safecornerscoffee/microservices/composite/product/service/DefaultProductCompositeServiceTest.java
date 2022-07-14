@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.OK;
@@ -104,6 +105,9 @@ class DefaultProductCompositeServiceTest {
         Review review = new Review(compositeProduct.getProductId(), 1, "a", "s", "c", null);
         when(compositeIntegration.createReview(any(Review.class))).thenReturn(Mono.just(review));
 
+        when(compositeIntegration.deleteProduct(anyInt())).thenReturn(Mono.never().then());
+        when(compositeIntegration.deleteRecommendations(anyInt())).thenReturn(Mono.never().then());
+        when(compositeIntegration.deleteReviews(anyInt())).thenReturn(Mono.never().then());
 
         postAndVerifyProduct(compositeProduct, OK);
 

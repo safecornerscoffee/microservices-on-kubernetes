@@ -82,7 +82,7 @@ public class DefaultProductCompositeService implements ProductCompositeService {
 
         integration.deleteReviews(productId).subscribe();
 
-        LOG.debug("getCompositeProduct: aggregate entities deleted for productId: {}", productId);
+        LOG.debug("deleteCompositeProduct: aggregate entities deleted for productId: {}", productId);
     }
 
     private ProductAggregate createProductAggregate(Product product, List<Recommendation> recommendations, List<Review> reviews, String serviceAddress) {
