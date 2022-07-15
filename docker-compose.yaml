@@ -39,8 +39,6 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-    ports:
-      - "8080:8080"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -48,8 +46,16 @@ services:
   eureka:
     build: spring-cloud/eureka-server
     mem_limit: 350m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  gateway:
+    build: spring-cloud/gateway-server
+    mem_limit: 350m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     ports:
-      - "8761:8761"
+      - "8080:8080"
 
   mongodb:
     image: mongo:4.0.10
@@ -65,7 +71,7 @@ services:
 
   mariadb:
     image: mariadb:10.5
-    mem_limit: 450m
+    mem_limit: 350m
     ports:
       - "3306:3306"
     environment:
