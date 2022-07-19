@@ -4,6 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>com.safecornerscoffee.microservices</groupId>
+        <artifactId>microservices-on-kubernetes</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
     <groupId>com.safecornerscoffee.microservices</groupId>
     <artifactId>aggregate-report</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -14,6 +21,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.safecornerscoffee.microservices.api</groupId>
+            <artifactId>api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>com.safecornerscoffee.microservices.util</groupId>
             <artifactId>util</artifactId>
@@ -37,6 +49,16 @@
         <dependency>
             <groupId>com.safecornerscoffee.microservices.core.review</groupId>
             <artifactId>review-service</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.safecornerscoffee.microservices</groupId>
+            <artifactId>eureka-server</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.safecornerscoffee.microservices</groupId>
+            <artifactId>gateway-server</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
