@@ -33,7 +33,6 @@
 		<module>microservices/review-service</module>
 		<module>spring-cloud/eureka-server</module>
 		<module>spring-cloud/gateway-server</module>
-		<module>spring-cloud/authorization-server</module>
 		<module>aggregate-report</module>
 	</modules>
 
